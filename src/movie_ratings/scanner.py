@@ -125,6 +125,18 @@ def run_scan(config: ScanConfig, api_key: str | None = None) -> list[MovieRecord
             config.min_votes,
         )
         records.append(rec)
+        # Show progress: file -> parsed title (year) -> rating or not found
+        title_display = parsed.title
+        year_display = f" ({parsed.year})" if parsed.year else ""
+        if omdb and omdb.imdb_rating is not None:
+            rating_display = f" -> {omdb.imdb_rating} ({rec.verdict})"
+        else:
+            rating_display = " -> not found"
+        try:
+            rel = path.relative_to(root)
+        except ValueError:
+            rel = path
+        print(f"  {rel} | {title_display}{year_display}{rating_display}")
     return records
 
 
