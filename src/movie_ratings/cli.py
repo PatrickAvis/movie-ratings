@@ -93,7 +93,7 @@ def main(
     typer.echo(f"Found {len(records)} movie(s).")
 
     export_csv(records, config.export_csv)
-    typer.echo(f"CSV written to {config.export_csv}")
+    typer.echo(f"Report saved to CSV: {config.export_csv.resolve()}")
 
     if config.export_json is not None:
         export_json(records, config.export_json)

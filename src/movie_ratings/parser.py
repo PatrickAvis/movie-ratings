@@ -116,33 +116,26 @@ def _title_from_cleaned(cleaned: str, year: int | None) -> str:
 def parse_path(file_path: Path) -> ParsedMovie:
     """
     Extract a best-guess movie title and optional year from a file path.
-    Uses the file stem and parent folder name; strips common release tags.
+    Prefers the parent folder name for lookup (e.g. "Inception (2010)"); falls back to filename.
     """
     path = Path(file_path)
     stem = path.stem
-    parent_name = path.parent.name if path.parent else ""
+    parent_name = path.parent.name if path.parent and path.parent.name else ""
 
-    # Combined text: parent often has "Movie Title (Year)"
+    # Year from folder + filename combined
     combined = f"{parent_name} {stem}" if parent_name else stem
     year = _extract_year(combined)
 
-    # Prefer parent folder if it looks like "Title (Year)" and filename is generic
-    generic_names = {"movie", "film", "video", "untitled"}
-    if (
-        parent_name
-        and stem.lower() in generic_names
-        and YEAR_BRACKETS.search(parent_name)
-    ):
+    # Prefer folder name for title when present (folder is usually "Movie Title (Year)")
+    if parent_name:
         cleaned_parent = _clean_stem(parent_name)
         title = _title_from_cleaned(cleaned_parent, year)
         if title:
             return ParsedMovie(title=title, year=year)
 
+    # Fall back to filename stem
     cleaned = _clean_stem(stem)
     title = _title_from_cleaned(cleaned, year)
-    if not title and parent_name:
-        cleaned_parent = _clean_stem(parent_name)
-        title = _title_from_cleaned(cleaned_parent, year)
     if not title:
         title = cleaned or stem.replace(".", " ").strip() or "Unknown"
     return ParsedMovie(title=title, year=year)
