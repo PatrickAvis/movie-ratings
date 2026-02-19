@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "movie-ratings"
+version = "0.1.0"
+description = "Scan movie files, get IMDb ratings via OMDb API, output keep/remove recommendations."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.0",
+    "httpx",
+    "typer",
+    "rich",
+    "python-dotenv",
+]
+
+[project.scripts]
+movie-ratings = "movie_ratings.cli:run_cli"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
