@@ -103,6 +103,7 @@ class MovieRecord(BaseModel):
     """Final output record: file path, parsed/API data, verdict and reason."""
 
     path: Path
+    folder_path: Path | None = None
     parsed_title: str
     parsed_year: int | None
     imdb_id: str | None = None

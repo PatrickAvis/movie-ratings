@@ -76,6 +76,7 @@ def _record(
     verdict, reason = _verdict_and_reason(omdb, threshold, min_votes)
     return MovieRecord(
         path=path,
+        folder_path=path.parent,
         parsed_title=parsed.title,
         parsed_year=parsed.year,
         imdb_id=omdb.imdb_id if omdb else None,
