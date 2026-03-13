@@ -104,6 +104,7 @@ class MovieRecord(BaseModel):
 
     path: Path
     folder_path: Path | None = None
+    size_gb: float | None = None
     parsed_title: str
     parsed_year: int | None
     imdb_id: str | None = None

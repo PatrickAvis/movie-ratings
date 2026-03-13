@@ -3,3 +3,4 @@ httpx
 typer
 rich
 python-dotenv
+guessit

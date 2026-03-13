@@ -5,15 +5,28 @@ A Python 3.12 CLI that scans a directory of movie files, looks up IMDb ratings v
 ## Features
 
 - Recursively finds movie files (mkv, mp4, avi, m4v, mov, iso by default)
-- Extracts best-guess **title** and **year** from filenames and folder names
+- Extracts best-guess **title** and **year** from filenames and folder names using [guessit](https://github.com/guessit-io/guessit)
 - Queries **OMDb API** for `imdbRating`, `imdbVotes`, Genre, Runtime
-- **SQLite cache** so repeated runs don’t re-query the same movie
+- **Concurrent API requests** (up to 5 in parallel) for faster scans
+- **Exponential backoff** on rate-limit responses (429)
+- **SQLite cache** so repeated runs don't re-query the same movie
 - **CSV** and optional **JSON** export
 - **Console table** (Rich) with sortable output; optional `--print-top N` / `--print-bottom N`
 - **KEEP/REMOVE** verdict from `--threshold` and `--min-votes`
 - Optional **to_delete.txt** list of REMOVE paths
 - Optional **quarantine** folder: move REMOVE files there (preserve relative paths)
 - **Dry-run** mode: no moves or deletes
+
+## Quick start (copy & run)
+
+From PowerShell, run these commands to activate the venv, install, and scan a movies folder (edit the path and CSV name as needed):
+
+```powershell
+cd C:\Users\Patrick\CursorProjects\movie-ratings
+.\.venv\Scripts\Activate.ps1
+pip install -e .
+python -m movie_ratings "Z:\Movies" --export-csv report.csv
+```
 
 ## Setup
 
@@ -30,7 +43,7 @@ A Python 3.12 CLI that scans a directory of movie files, looks up IMDb ratings v
 3. **API key**
 
    - Get a free key: [OMDb API Key](https://www.omdbapi.com/apikey.aspx)
-   - Free tier: 1,000 requests per day; the app uses a 1 s delay between requests to stay within limits.
+   - Free tier: 1,000 requests per day.
    - Set in environment or `.env`:
 
    ```bash
@@ -74,7 +87,7 @@ python -m movie_ratings /path/to/movies --include-regex "\.mkv$"
 | `--threshold` | 7.0 | Keep if imdb_rating >= this |
 | `--min-votes` | 0 | Keep only if imdb_votes >= this |
 | `--cache` | .cache/imdb_cache.db | SQLite cache path |
-| `--refresh` | false | Ignore cache |
+| `--refresh` | false | Ignore cache and re-fetch |
 | `--export-csv` | ./movie_ratings.csv | CSV output path |
 | `--export-json` | (none) | Optional JSON path |
 | `--dry-run` | false | No move/delete |
@@ -87,12 +100,14 @@ python -m movie_ratings /path/to/movies --include-regex "\.mkv$"
 
 ## Filename parsing
 
-The parser:
+Title and year are extracted using [guessit](https://github.com/guessit-io/guessit), a library purpose-built for media filenames. It handles a wide range of naming conventions automatically:
 
-- Detects years like `(1999)`, `[1999]`, or `1999` in filenames and parent folders
-- Strips resolution (720p, 1080p, 4K), codecs (x264, HEVC), source (BluRay, WEB-DL), audio (DTS, 5.1), release tags (REPACK, PROPER), and group names
-- Treats dots and underscores as spaces
-- Uses parent folder name when the filename is generic (e.g. `movie.mkv` in `Inception (2010)/`)
+- Dots, underscores, and hyphens as word separators
+- Resolution (720p, 1080p, 4K), codecs (x264, HEVC), sources (BluRay, WEB-DL), audio (DTS, 5.1), release tags, and group names are all stripped
+- Years in `(1999)`, `[1999]`, or bare `1999` formats
+- Titles that start with a year (e.g. `2001 A Space Odyssey`)
+
+The parent folder name is preferred over the filename when present (e.g. `movie.mkv` inside `Inception (2010)/` correctly resolves to "Inception").
 
 ## Development
 

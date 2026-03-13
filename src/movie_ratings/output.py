@@ -20,6 +20,7 @@ def _record_to_row(rec: MovieRecord) -> dict:
     return {
         "path": str(rec.path),
         "folder_path": str(rec.folder_path) if rec.folder_path is not None else "",
+        "size_gb": rec.size_gb if rec.size_gb is not None else "",
         "parsed_title": rec.parsed_title,
         "parsed_year": rec.parsed_year,
         "imdb_id": rec.imdb_id,
@@ -39,7 +40,7 @@ def export_csv(records: list[MovieRecord], path: Path) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = [
-        "path", "folder_path", "parsed_title", "parsed_year", "imdb_id", "title", "year",
+        "path", "folder_path", "size_gb", "parsed_title", "parsed_year", "imdb_id", "title", "year",
         "imdb_rating", "imdb_votes", "genre", "runtime", "verdict", "reason",
     ]
     with path.open("w", newline="", encoding="utf-8") as f:
