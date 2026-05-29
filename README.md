@@ -116,6 +116,27 @@ pip install -e ".[dev]"
 pytest tests -v
 ```
 
+## Architecture at a glance
+
+For newcomers, the key modules are:
+
+- `src/movie_ratings/cli.py`: CLI entrypoint and option parsing (Typer).
+- `src/movie_ratings/scanner.py`: orchestration pipeline (discover files -> parse -> fetch -> verdict).
+- `src/movie_ratings/parser.py`: filename/folder parsing heuristics for title/year extraction.
+- `src/movie_ratings/api_client.py`: OMDb HTTP calls, retry, and cache integration.
+- `src/movie_ratings/cache.py`: SQLite cache read/write helpers.
+- `src/movie_ratings/models.py`: Pydantic models and normalization/validation.
+- `src/movie_ratings/output.py`: CSV/JSON export, console table printing, remove-list output.
+
+Typical data flow:
+
+1. Parse CLI args into `ScanConfig`.
+2. Collect candidate files by extension.
+3. Parse each path into `(title, year)`.
+4. Query OMDb (or cache hit) for metadata.
+5. Compute KEEP/REMOVE verdict from threshold + votes.
+6. Export and print reports; optionally write or move REMOVE files.
+
 ## License
 
 MIT.
